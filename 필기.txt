@@ -1,0 +1,69 @@
+Linux
+- Docker 수업
+- AWS 수업
+- CI-CD 수업
+
+
+Linux
+- 오픈 소스 기반으로 만들어진 유닉스 계열 운영체제
+- 리누스 토발즈(1991년?) > 리눅스 운영체제(커널) 개발
+
+
+리눅스 배포반
+- 커널: 핵심기능 + 편의성/기능 부족
+- 커널 + 여러가지 추가 프로그램 > 패킹 > 배포판
+
+1. 데비안(Debian) 계열
+    - 우분투(Ubuntu), 리눅스 민트(Linux Mint), 칼리 리눅스(Kali Linux)
+
+2. 레드햇(Red Hat) 계열
+    - 레드햇 엔터프라이즈 리눅스(RHEL), CentOS
+
+3. 슬랙웨어(Slackware) 계열
+    - 슬랙웨어, SuSE/peonSuSE
+
+4. 안드로이드 계열
+
+
+-------------------------------------------------------------------------------------------
+
+Ubuntu 실습 방법?
+
+1. PC 직접 설치
+2. 가상 머신(VirtualBox, VMWare) 설치
+-------------------------------------------------------------------------------------------
+3. 도커 > 컨테이너
+4. WSL2(Windows Subsystem for Linux) > 윈도우 기능(리눅스 환경 제공)
+5. 클라우드 서버(AWS, Azure, Google Cloud)
+
+
+-------------------------------------------------------------------------------------------------
+
+WSL2 설치하기
+
+1. windows 기능 켜기/끄기
+    - Linux용 Windows 하위 시스템(v)
+    - 가상 머신 플랫폼(Virtual Machine Platform)(v)
+    - Hyper-V(v)
+
+2. cmd 실행
+    - $ wsl --update
+
+3. 리눅스 배포판 설치하기
+    - MS Store > "ubuntn"
+    - Ubuntu 20.04 LTS
+    - Ubuntu 22.04 LTS
+    - Ubuntu 24.04 LTS
+    - Ubuntu 26.04 LTS
+
+4. 실행
+    - 시작 > 프로그램 > Ubuntu
+    - cmd > wsl
+
+    - wsl --list
+    - wsl --install //최신 버전 LTS 설치
+    - wsl --install [배포판 버전]
+
+    - Create a default Unix user account: ubuntu
+    - New password: java1234
+    - Retype new password: java1234
