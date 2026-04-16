@@ -9,8 +9,8 @@ Linux
 - 리누스 토발즈(1991년?) > 리눅스 운영체제(커널) 개발
 
 
-리눅스 배포반
-- 커널: 핵심기능 + 편의성/기능 부족
+리눅스 배포판
+- 커널: 핵심 기능 + 편의성/기능 부족
 - 커널 + 여러가지 추가 프로그램 > 패킹 > 배포판
 
 1. 데비안(Debian) 계열
@@ -20,24 +20,25 @@ Linux
     - 레드햇 엔터프라이즈 리눅스(RHEL), CentOS
 
 3. 슬랙웨어(Slackware) 계열
-    - 슬랙웨어, SuSE/peonSuSE
+    - 슬랙웨어, SuSE/openSuSE
 
 4. 안드로이드 계열
 
 
--------------------------------------------------------------------------------------------
+-----------------------------------------------------------
 
 Ubuntu 실습 방법?
 
 1. PC 직접 설치
 2. 가상 머신(VirtualBox, VMWare) 설치
--------------------------------------------------------------------------------------------
+--------
 3. 도커 > 컨테이너
 4. WSL2(Windows Subsystem for Linux) > 윈도우 기능(리눅스 환경 제공)
 5. 클라우드 서버(AWS, Azure, Google Cloud)
 
 
--------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------
 
 WSL2 설치하기
 
@@ -50,7 +51,7 @@ WSL2 설치하기
     - $ wsl --update
 
 3. 리눅스 배포판 설치하기
-    - MS Store > "ubuntn"
+    - MS Store > "ubuntu"
     - Ubuntu 20.04 LTS
     - Ubuntu 22.04 LTS
     - Ubuntu 24.04 LTS
@@ -59,11 +60,310 @@ WSL2 설치하기
 4. 실행
     - 시작 > 프로그램 > Ubuntu
     - cmd > wsl
-
+    
     - wsl --list
     - wsl --install //최신 버전 LTS 설치
-    - wsl --install [배포판 버전]
+    - wsl --install <배포판 버전>
 
     - Create a default Unix user account: ubuntu
     - New password: java1234
     - Retype new password: java1234
+
+
+
+-----------------------------------------------------------------
+
+터미널
+- ubuntu@DESKTOP-6TTRTK5:/mnt/c/Users/in$ 
+- 유저명@컴퓨터명:현재경로
+
+
+$ vi ~/.bashrc
+
+
+
+Shell, 쉘
+- 여러종류의 쉘이 있다.
+
+- Bourne Shell(sh)
+    - 유닉스에 최초로 사용된 표준 쉘
+    - sh 명령어
+    - 단순하고 가볍다. 기능이 적다.
+
+- Bash(Bourne Again Shell)
+    - 리눅스에서 가장 많이 사용하는 기본 쉘
+
+- zsh(Z Shell)
+    - bash 모든 기능 + 자동 완성, 테마, 플러그인 등 제공
+    - macOS
+
+
+
+
+
+리눅스 파일 시스템 > 구조
+
+- /home: 사용자(계정) 폴더
+- /etc: 시스템 설정. 잘못 건드리면 시스템 불안정
+- /usr: Unix System Resources. 애플리케이션나 라이브러리 등을 관리
+        - 톰캣, JDK > 사용자가 직접 설치하는 경우
+- /opt: Optional. 애플리케이션나 라이브러리 등을 관리
+        - 대형 소프트웨어 or 상용 소프트웨어
+- /root: 관리자(root) 계정의 홈 디렉토리
+- /var: Variable. 가변 데이터
+        - 로그, 이메일, 임시 파일 등.. 자주 변경되는 데이터
+- /mnt: Mount. 리눅스가 외부 저장소를 연결해놓은 디렉터리
+
+
+-----------------------------------------------------------------
+
+리눅스 명령어
+
+1. pwd, Print Working Directory
+- $ pwd
+- 현재 작업 중인 디렉토리의 경로를 출력
+
+- WSL2 사용 중 > $ explorer.exe .
+
+
+
+2. ls, List
+- $ ls [옵션] [경로]
+
+- 디렉토리의 파일/폴더 목록을 출력
+
+- $ ls -l: 상세 정보까지 출력(long)
+- $ ls -a: 숨긴 파일/폴더까지 출력(all)
+- $ ls -al
+- $ ls -la
+
+- 출력 결과 의미
+    a. l rwx rwx rwx > 777
+       d rwx rwx rwx
+       - rwx rwx rwx
+
+       첫번째 문자: 파일 유형
+        - '-': 일반 파일
+        - 'd': 디렉터리
+        - 'l': 심볼릭 링크
+
+       2~4번째 문자: 소유자(User) 권한
+       5~7번째 문자: 그룹(Group) 권한
+       8~10번째 문자: 기타 사용자(Other) 권한
+
+    b. 소유자(Owner): 파일/디렉토리 소유. 파일/디렉토리를 직접 만들었거나, 소유권을 가지고 있는 유저
+    c. 그룹(Group): 계정의 집합
+
+
+    d rwx r-x r-x aaa
+    - rw- r-- r-- 테스트.txt
+
+    권한(Permission)
+    - 파일/디렉터리에 대해 누가 + 어떤 작업이 가능한지에 대한 정책
+    - 루트(root) 사용자가 변경한다.
+    - 읽기(r, 4): 파일(내용 읽기), 폴더(내용 열람)
+    - 쓰기(w, 2): 파일(내용 수정), 폴더(새파일 생성/삭제)
+    - 실행(x, 1): 파일(실행), 폴더(접근)
+    - rw- > 읽기+쓰기 > 4 + 2 > 6
+    - rwx > 읽기+쓰기+실행 > 4 + 2 + 1> 7
+    - r-x > 읽기+실행 > 4 + 1 > 5
+    - 2^0 = 1 1
+    - 2^1 = 2 0
+    - 2^2 = 4 0
+    - 2^3 = 8 1
+
+
+3. cd, Change Directory
+- $ cd [디렉터리 경로]
+- $ cd 폴더명   # 자식 폴더로 이동
+- $ cd ..       # 부모 폴더
+- $ cd /        # 루트 폴더
+- $ cd ~        # 홈 디렉터리
+- $ cd          # 홈 디렉터리
+- $ cd -        # 이전 폴더
+
+
+4. mkdir, Maker Directory
+- $ mkdir [옵션] [디렉터리명]
+- 디렉터리 생성
+- $ mkdir aaa
+- $ mkdir -p bbb/ccc/ddd  # parents
+
+
+5. history
+- $ history [개수]
+- 명령어 이력을 출력한다.
+
+- 출력 결과 > 번호
+- $ !번호 # 재실행
+
+
+6. touch
+- $ touch [파일명]
+- 빈 파일을 생성하는 명령어
+- $ touch aaa.txt
+- $ touch bbb.txt ccc.txt ddd.txt
+
+
+
+7. rm, Romove
+- $ rm [옵션] [파일]
+- $ rm -r [디렉터리]
+- $ rmdir [디렉터리]
+
+- 파일 삭제: 현재 디렉터리에 쓰기(w) 권한이 필요
+- 폴더 삭제: 빈폴더만 삭제 가능
+
+$ rm aaa.txt
+$ rm aaa
+$ rmdir aaa
+
+
+파일 삭제
+$ rm aaa.txt        # 파일 삭제
+$ rm -f aaa.txt     # -f. Force
+
+폴더 삭제
+$ rmdir aaa         # 빈폴더 삭제
+$ rm -r aaa         # 내용없는 폴더 삭제
+$ rm -r aaa         # 내용있는 폴더 삭제
+$ rm -R aaa         # 내용있는 폴더 삭제
+$ rm -rf aaa        # 내용있는 폴더 강제 삭제
+
+
+
+8. mv, Move
+- $ mv [옵션] [원본] [대상]
+- 파일/디렉터리 이동 or 이름변경
+
+- $ mv ccc.txt bbb
+- $ mv ccc.txt bbb/ccc.txt
+
+- $ mv ddd.txt eee.txt
+- $ mv eee.txt ccc.txt      # 덮어쓰기
+- $ mv -f eee.txt ccc.txt   # 덮어쓰기
+- $ mv -i eee.txt ccc.txt   # 확인 후 덮어쓰기
+
+
+
+9. cp, Copy
+- $ cp [옵션] [원본] [대상]
+- 파일/디렉터리를 복사
+- $ cp -R: 하위 폴더 구조까지 복사
+
+- $ cp 테스트.txt bbb
+
+
+
+10. vi, visual editor > vim
+- 텍스트 편집기
+
+- vi 모드
+    - 명령모드: 명령 단축키 입력 > 그 기능을 실행. 커서 이동, 삭제, 복사, 검색 등..
+    - 입력모드: 텍스트 편집
+    - 명령행모드: 
+
+모드 전환
+- 명령 모드 - i > 입력 모드
+- 입력 모드 - esc > 명령 모드
+- 명령 모드 - : > 명령행 모드
+
+
+명령 모드 단축키
+- dd: 현재 라인 삭제
+- u: 명령 취소
+- D: 커서 위치로부터 행의 끝까지 삭제
+- yy: 줄 복사
+- p: 붙여넣기
+
+명령행 모드
+- :q > 프로그램 종료(quit)
+- :w > 저장(write) 기존 파일 열었을때
+- :w aaa.txt > 새파일 저장
+- :wq > 저장 + 종료
+- :q! > 저장없이 종료
+
+
+
+
+11. man, Manual
+- $ man [명령어]
+
+
+
+
+12. echo
+- 텍스트를 터미널에 출력하는 기본 명령어
+- $ echo "안녕하세요." > hello.txt      # 덮어쓰기(create)
+- $ echo "반갑습니다." > hello.txt
+- $ echo "오랫만입니다." >> hello.txt   # 이어쓰기(append)
+
+
+
+
+13. cat, Concatenate
+- $ cat [옵션] [파일명]
+- 1개 이상의 파일을 연결 후 > 출력 or 새 파일 저장
+
+- $ cat hello.txt
+- $ cat 테스트.txt | more
+    - Enter: 한줄씩 아래로
+    - Space bar: 한페이지씩 아래로
+    - q: 종료
+
+
+14. ifconfig
+- 할당된 IP 조회
+
+15. ip addr
+- ifconfig > 최신
+
+16. ps, Proccess Status
+- $ ps -ef
+- $ ps -ef | grep 프로세스명
+- $ ps -ef | grep apache
+- $ ps -ef | grep java
+
+17. kill
+- $ kill <프로세스ID>
+- $ kill 300
+- $ kill -9 300
+
+
+15. apt-get
+- 패키지 관리 도구
+- 관리자 권한이 있어야 실행 가능
+    1. root 로그인
+    2. 잠시 루트 권한을 빌려오기
+
+15.1 apt-get update
+- /etc/apt/sources.list > 갱신
+- $ sudo apt-get update
+
+15.2 apt-get install
+- $ sudo apt-get install net-tools
+
+15.3 apt-get remove
+- $ sudo apt-get remove net-tools
+- 패키지만 삭제
+- 설정파일은 그대로 보관
+
+15.4 apt-get purge
+- $ sudo apt-get purge net-tools
+- 패키지 + 설정파일 삭제
+
+15.5 apt-get autoremove
+- $ sudo apt-get autoremove
+- 더 이상 사용하지 않는 패키지를 삭제한다.
+- 의존성을 체크 > 더 이상 참조되지 않는 패키지를 삭제
+
+15.6 apt-get clean
+- $ sudo apt-get clean
+- 15.5 + 설치 파일 등
+
+
+우분투 패키지 설치하기
+1. apt-get install > 내부적으로 *.deb 다운로드 + 설치
+2. *.deb > 실행
+
+우분투 > 데비안 게열 > *.deb
