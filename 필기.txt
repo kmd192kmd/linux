@@ -569,7 +569,7 @@ $ docker run -d --name apache httpd
 
 
 컨테이너 통신
-- 호스트/호스트 외부와 컨테이너간의 네트워크를 설정해야 한다.
+- 호스트/호스트 외부와 컨테이너간의 네크워크를 설정해야 한다.
 
 # 포트 포워딩
 - 컨테이너를 생성할 때 포트 포워딩 설정을 같이 한다.
@@ -583,11 +583,11 @@ $ docker start apache
 
 or
 
-$ docker run --name apache -p 8888:80 httpd //실행 > 종료
+$ docker run --name apache -p 8888:80 httpd  //실행 > 종료
 
-$ docker run --name apache2 -p 8888:80 httpd 
+$ docker run -d --name apache2 -p 8888:80 httpd
 
-$ docker run --name apache3 -p 8888:80 httpd 
+$ docker run -d --name apache3 -p 8889:80 httpd
 
 
 
@@ -596,12 +596,12 @@ $ docker run --name apache3 -p 8888:80 httpd
 
 컨테이너 이미 실행 후 > 컨테이너 접근하기
 - 실행 중인 컨테이너는 호스트에서 접근이 가능하다.
-- 컨테이너는 리눅스 운영체제를 사용한다.
+- 컨테이너는 리눅스 운영체제를 사용한다. 
     > 컨테이너 내부에서 쉘을 사용할 수 있다.
 - 도커 이미지의 대부분이 Debian 계열의 리눅스를 사용한다.(우분투)
 
-$  docker exec [옵션] <컨테이너명> <실행명령어> [명령어 인자]
-$  docker exec [옵션] <컨테이너ID> <실행명령어> [명령어 인자]
+$ docker exec [옵션] <컨테이너명> <실행명령어> [명령어 인자]
+$ docker exec [옵션] <컨테이너ID> <실행명령어> [명령어 인자]
 
 
 $ docker run -d --name apache -p 8888:80 httpd
@@ -611,7 +611,248 @@ $ docker rm -f apache
 
 
 $ docker exec -it apache /bin/bash # 정확한 위치
-$ docker exec -it apache bash      # 알아서 검색 + 실행
+$ docker exec -it apache bash      # 알아서 검색 + 실행 
 
 # -i: 키보드 입력 가능
 # -t: 터미널 환경, 실행 결과 출력
+
+
+
+
+# 아파치 이미지 다운로드 > 컨테이너 생성(+포트 포워딩) > 컨테이너 실행 
+    > 서비스 사용 > 컨테이너 종료
+
+# 각각 실행
+$ docker image pull httpd # 아파치 이미지 다운로드
+$ docker image ls # 이미지 목록보기
+$ docker create --name apache -p 8888:80 httpd # 컨테이너 생성
+$ docker ps -a # 컨테이너 목록보기
+$ docker start apache # 컨테이너 실행(Detached)
+# 브라우저 접속 > 아파치 확인
+$ docker stop apache # 컨테이너 중지하기
+$ docker rm apache # 컨테이너 삭제하기
+
+# 한번에 실행(많이 사용)
+$ docker run --name apache -p 8888:80 httpd # 이미지 다운로드 + 컨테이너 생성 + 컨테이너 실행(Attached)
+$ docker run -d --name apache -p 8888:80 httpd # 이미지 다운로드 + 컨테이너 생성 + 컨테이너 실행(Detached)
+# 브라우저 접속 > 아파치 확인
+$ docker stop apache # 컨테이너 중지하기
+$ docker rm apache # 컨테이너 삭제하기
+
+
+
+
+여러개의 컨테이너를 연동하기
+- 각 컨테이너는 자제 내부 IP를 가진다. > 서로간의 IP를 사용해서 식별
+- 각 컨테이너는 같은 네트워크에 속하면 > 서로간의 컨테이너명을 사용해서 식별
+
+네트워크 목록보기
+$ docker network ls
+
+
+네트워크 생성하기
+$ docker network create <네트워크명>
+$ docker network create mynetwork
+
+
+NETWORK ID     NAME        DRIVER    SCOPE
+008b20cf1678   bridge      bridge    local
+0687c05ff027   mynetwork   bridge    local
+
+- NAME(bridge)
+    - 기본 네트워크
+    - 컨테이너를 생성하면, 자동으로 이 네트워크에 포함된다.
+    - 컨테이너를 생성할 때 별도의 네트워크를 지정하면, 지정한 네트워크에 포함된다.
+
+- DIRVER(bridge)
+    - 가상 공유기 역할
+    - 같은 네트워크 상의 컨테이너간의 연결해주는 역할
+
+
+
+네트워크 삭제하기
+$ docker network rm <네트워크명>
+$ docker network rm mynetwork
+
+
+
+여러 개의 컨테이너를 같은 네트워크에 연동하기
+$ docker network create mynetwork
+
+$ docker run -d --name nginx --network mynetwork nginx
+
+$ docker run -it --name busybox --network mynetwork busybox
+
+# busybox > (접속) > nginx
+
+$ ping nginx
+
+$ docker run -it --name busybox busybox
+
+
+
+
+$ docker run -d --name nginx -p 8888:80 nginx
+
+
+
+
+
+컨테이너 파일 복사
+- 컨테이너와 호스트간의 파일 복사
+- 드래그 앤 드롭 > 불가능
+- 명령어
+
+
+# 호스트 > (복사) > 컨테이너
+$ docker cp <호스트 경로> <컨테이너명>:<컨테이너 경로>
+
+# 컨테이너 > (복사) > 호스트
+$ docker cp <컨테이너명>:<컨테이너 경로> <호스트 경로>
+
+
+
+아파치 컨테이너 실행 > 호스트에서 index.html 생성 > 컨테이너에 복사
+
+# index.html 생성하기
+
+# 아파치 컨테이너 생성하기
+$ docker run -d --name apache -p 8888:80 httpd
+
+# 파일 복사하기(VS Code > Ctrl + `)
+$ docker cp ./index.html apache:/usr/local/apache2/htdocs
+
+
+
+$ docker cp apache:/usr/local/apache2/htdocs/index.html ./index2.html
+
+*** 컨테이너와 호스트간의 파일 복사 > 가끔
+
+
+
+
+스토리지 마운트(***)
+- 위의 cp 명령어는 결국 컨테이너가 삭제되면 파일도 같이 삭제된다.
+- 결국 컨테이너내의 파일을 보존하려면 > 호스트에 복사를 해야 한다. 
+   > 귀찮음 > 편하게 개선 > 스토리지 마운트
+
+- 컨테이너(가상 컴퓨터) + 외장 하드 or 외장 USB 메모리
+- 스토리지 마운트의 목적 > 컨테이너가 삭제되더라도 데이터를 유지(*****)
+
+- 컨테이너를 생성할 때 > 스토리지 마운트를 지정한다.(*****)
+    - 컨테이너를 생성한 이후 > 스토리지 마운트 불가능
+
+- 스토리지 마운트를 하면 컨테이너의 경로의 디렉토리의 모든 상태가 
+    덮어쓰기가 된다.(기존 파일을 모두 강제 삭제된다.) *****
+
+1. 바인드 마운트, Bind Mount > 개발/테스트 데이터 용
+    - 호스트 시스템의 특정 디렉터리를 컨테이너에 마운트한다.
+    - C:\code\drive 디렉터리 > 바인드 마운트 > 컨테이너의 리눅스의 특정 폴더와 연결
+
+2. 볼륨 마운트, Volume Mount > 운용 데이터 용
+    - 도커 엔진이 직접 관리하는 저장 공간 > 볼륨(Volume)
+    - 도커가 관리하는 외장 하드
+    - 볼륨을 특정 컨테이너에 결합(마운트)해서 사용이 가능하다.
+
+
+
+
+바인드 마운트
+$ docker run -v <호스트 경로>:<컨테이너 경로>
+
+# 로컬 경로
+C:\code\drive
+
+# 컨테이너 생성하기
+$ docker run -it --name busybox -v c:\code\drive:/home busybox
+
+
+
+
+아파치 컨테이너 + 로컬 개발 + 바인드 마운트
+
+# 로컬 폴더
+C:\code\drive2
+
+# 아파치 컨테이너 생성 + 포트 포워딩 + 바인드 마운트
+$ docker run -d --name apache -p 8888:80 -v C:\code\drive2:/usr/local/apache2/htdocs httpd:2.2
+
+$ docker run -d --name apache -p 8888:80 -v C:\code\drive2:/usr/local/apache2/htdocs httpd
+
+
+
+
+
+볼륨 마운트
+
+$ docker volume create <볼륨명>
+$ docker volume ls
+$ docker volume inspect <볼륨명>
+$ docker volume rm <볼륨명>
+
+$ docker run -v <볼륨명>:<컨테이너 경로>
+
+$ docker volume create myvolume
+$ docker volume rm myvolume
+
+
+
+
+$ docker volume create myvolume
+
+$ docker run -it --name busybox -v myvolume:/home/volume busybox
+
+$ vi test.txt
+
+$ docker run -it --name busybox2 -v myvolume:/home/aaa busybox
+
+
+
+
+
+
+
+
+
+
+이미지 생성하기
+- 기존 컨테이너를 이미지로 변환하기(역)
+- Dockerfile 스크립트로 이미지를 생성하기(보편적)
+
+
+
+Dockerfile 만들기
+- "Dockerfile"
+
+FROM httpd  # 베이스 이미지
+COPY ./dir /usr/local/apache2/htdocs/ # 세팅
+EXPOSE 8080 # 도움말
+
+
+
+Dockerfile
+- 이미지를 빌드(생성)하는 텍스트 기반 스크립트
+- 베이스 이미지 + 파일 복사 + 시작 명령어 등..
+
+$ docker build -t <이미지명> .
+
+$ docker build -t myapache .
+
+$ docker run -d --name apache -p 8080:80 myapache
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
