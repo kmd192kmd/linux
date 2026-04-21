@@ -821,12 +821,16 @@ $ docker run -it --name busybox2 -v myvolume:/home/aaa busybox
 
 
 
+
+
 Dockerfile 만들기
 - "Dockerfile"
 
 FROM httpd  # 베이스 이미지
 COPY ./dir /usr/local/apache2/htdocs/ # 세팅
 EXPOSE 8080 # 도움말
+
+
 
 
 
@@ -837,6 +841,13 @@ Dockerfile
 $ docker build -t <이미지명> .
 
 $ docker build -t myapache .
+$ docker build -t myapache:latest .
+$ docker build -t myapache:v1.0.0 .
+
+v1.2.3
+- 1: 메이저 버전(이전 버전과 호환이 안될 수도 있을 정도 큰변화)
+- 2: 마이너 버전(새로운 큰 기능 추가)
+- 3: 패치 버전
 
 $ docker run -d --name apache -p 8080:80 myapache
 
@@ -844,6 +855,79 @@ $ docker run -d --name apache -p 8080:80 myapache
 
 
 
+자바 프로그램 > 이미지로 생성하기
+
+1. 자바 프로젝트 생성하기
+- Java Project
+- BoardTest
+- board.jar
+
+2. Dockerfile 생성하기
+
+FROM eclipse-temurin:11-jre
+WORKDIR /app
+COPY ./board.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+3. 이미지 빌드하기
+$ docker build -t board .
+$ docker build -t board-custom .
+$ docker build -t board-bash .
+
+4. 컨테이너 실행하기
+$ docker run -it --name board board
+$ docker run -it --name board-custom board-custom
+$ docker run -it --name board-bash board-bash
+
+*** 컨테이너는 그 안의 동작되는 프로그램이 
+    종료되면 자동으로 컨테이너도 종료된다.
+
+
+
+
+
+이미지 배포
+1. 로컬(사설) 도커 레지스트리 운영하기
+2. 도커 허브
+
+
+
+
+1. 로컬(사설) 도커 레지스트리 운영하기
+
+# 사설 레지스트리 생성하기
+$ docker run -d --name registry -p 9999:5000 registry
+
+# 배포할 이미지 생성
+$ docker build -t localhost:9999/board .
+
+# 이미지 업로드
+$ docker push localhost:9999/board
+
+# 사설 리포지토리에 업로드 확인하기
+$ curl http://localhost:9999/v2/_catalog
+
+# 사설 리포지토리로부터 이미지 다운로드 + 컨테이너
+$ docker image pull board                   #도커 허브로부터
+$ docker image pull localhost:9999/board    #사설 리포지토리로부터
+
+
+
+
+2. 도커 허브 + public
+
+# 도커 허브에 로그인
+$ docker login
+
+# 업로드할 이미지 + 태그 추가
+$ docker build -t <도커허브ID>/<이미지명>:<태그> .
+$ docker build -t pinnpublic/board:v0.0.1 .
+
+# 도커 허브에 올리기
+$ docker push pinnpublic/board:v0.0.1
+
+# 다른 사용자 > 이미지 + 컨테이너
+$ docker run -it --name board pinnpublic/board:v0.0.1
 
 
 
@@ -852,6 +936,73 @@ $ docker run -d --name apache -p 8080:80 myapache
 
 
 
+
+
+오라클
+
+오라클 도커 이미지
+- 공식 오라클 이미지
+    - oracle/database:18.4.0-xe
+
+- 커뮤니티 이미지
+    - gvenzl/oracle-xe
+
+
+공식 오라클 이미지 > 직접 이미지 빌드하기
+
+- GitHub에서 오라클 도커 파일 클론하기
+$ git clone https://github.com/oracle/docker-images
+
+$ ./buildContainerImage.sh -v 18.4.0 -x
+ 
+
+
+오라클 컨테이너 생성하기
+$ docker run --name oracle -p 1522:1521 -p 5551:5550 -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+
+
+
+오라클 컨테이너 + 바인드 마운트
+- C:\code\ora-data
+
+$ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v C:\code\ora-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+
+
+# 백그라운드로 실행 중인 컨테이너 로그
+$ docker logs <컨테이너명>
+$ docker logs oracle
+$ docker logs -f oracle             //실시간 확인
+$ docker logs -f --tail 10 oracle   //실시간 확인 + 최신 10개
+
+
+# SQL 
+
+# 컨테이너 삭제
+
+# 다시 컨테이너 생성
+$ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v C:\code\ora-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+
+
+
+
+
+
+
+
+
+오라클 컨테이너 + 볼륨 마운트
+
+# 볼륨 생성하기
+$ docker volume create docker-data
+
+# 컨테이너
+$ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v docker-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+
+
+# SQL 
+
+# 컨테이너 삭제
+$ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v docker-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
 
 
 
