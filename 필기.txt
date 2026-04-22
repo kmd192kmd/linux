@@ -958,14 +958,14 @@ $ ./buildContainerImage.sh -v 18.4.0 -x
 
 
 오라클 컨테이너 생성하기
-$ docker run --name oracle -p 1522:1521 -p 5551:5550 -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+$ docker run --name oracle -p 1522:1521 -p 5551:5500 -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
 
 
 
 오라클 컨테이너 + 바인드 마운트
 - C:\code\ora-data
 
-$ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v C:\code\ora-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+$ docker run -d --name oracle -p 1522:1521 -p 5551:5500 -v C:\code\ora-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
 
 
 # 백그라운드로 실행 중인 컨테이너 로그
@@ -980,7 +980,7 @@ $ docker logs -f --tail 10 oracle   //실시간 확인 + 최신 10개
 # 컨테이너 삭제
 
 # 다시 컨테이너 생성
-$ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v C:\code\ora-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+$ docker run -d --name oracle -p 1522:1521 -p 5551:5500 -v C:\code\ora-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
 
 
 
@@ -996,14 +996,173 @@ $ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v C:\code\ora-data:/opt
 $ docker volume create docker-data
 
 # 컨테이너
-$ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v docker-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+$ docker run -d --name oracle -p 1522:1521 -p 5551:5500 -v docker-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
 
 
 # SQL 
 
 # 컨테이너 삭제
-$ docker run -d --name oracle -p 1522:1521 -p 5551:5550 -v docker-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
+$ docker run -d --name oracle -p 1522:1521 -p 5551:5500 -v docker-data:/opt/oracle/oradata -e ORACLE_PWD=java1234 -e ORACLE_CHARACTERSET=AL32UTF8 -e TZ=Asia/Seoul oracle/database:18.4.0-xe
 
 
+
+
+
+CLI 개행하기
+- ^, `, \ 뒤에 공백이 있으면 안된다.(오작동)
+
+1. Windows CMD
+
+$ docker run -d --name oracle ^
+    -p 1522:1521 ^
+    -p 5551:5500
+
+2. Windows PowerShell
+
+$ docker run -d --name oracle `
+    -p 1522:1521 `
+    -p 5551:5500
+
+3. Linux / macOS > bash(쉘)
+
+$ docker run -d --name oracle \
+    -p 1522:1521 \
+    -p 5551:5500
+
+
+
+
+
+
+
+# 오라클 > 커뮤니티 이미지 + 볼륨 마운트
+
+# 볼륨
+$ docker volume create oracle-data
+
+# 컨테이너
+$ docker run -d --name oracle ^
+    -p 1522:1521 ^
+    -p 5551:5500 ^
+    -v oracle-data:/opt/oracle/oradata ^
+    -e ORACLE_PASSWORD=java1234 ^
+    -e ORACLE_CHARACTERSET=AL32UTF8 ^
+    -e NLS_LANG=.AL32UTF8 ^
+    -e TZ=Asia/Seoul ^
+    gvenzl/oracle-xe:18.4.0
+
+
+
+
+# 오라클 컨테이너 + DB 스키마 구축(*.sql)
+
+# 볼륨
+$ docker volume create oracle-data
+
+# 컨테이너
+# /opt/oracle/scripts/oradata    # 공식 이미지
+# /container-entrypoint-initdb.d # gvenzl 이미지
+#   : 컨테이너가 생성될때 안에 있는 sql/sh을 자동으로 실하는 폴더
+$ docker run -d --name oracle ^
+    -p 1522:1521 ^
+    -p 5551:5500 ^
+    -v oracle-data:/opt/oracle/oradata ^
+    -v ./scripts:/container-entrypoint-initdb.d ^
+    -e ORACLE_PASSWORD=java1234 ^
+    -e ORACLE_CHARACTERSET=AL32UTF8 ^
+    -e NLS_LANG=.AL32UTF8 ^
+    -e TZ=Asia/Seoul ^
+    gvenzl/oracle-xe:18.4.0
+
+
+
+
+
+
+스프링 사이트 + 컨테이너
+
+1. 사이트 구현(스프링 + 오라클)
+2. 이미지 생성(스프링 + 오라클)
+3. 컨테이너 생성(스프링 + 오라클)
+
+프로젝트 생성
+- "AddressTest" > "com.test.java"
+
+
+
+
+DB없이 스프링 사이트만 구현 + 도커
+
+1. 구현
+2. Dockerfile
+3. 2번 > 이미지 생성
+    $ docker build -t address .
+4. 컨테이너
+    $ docker run -d --name address -p 8080:8080 address
+5. 브라우저
+    http://localhost:8080/java/
+    http://localhost:8080/address/
+    http://localhost:8080/ROOT/
+    http://localhost:8080/
+
+$ docker exec -it address bash
+
+
+
+
+
+위의 사이트 + DB > 이미지 > 컨테이너
+
+1. 로컬 구현
+
+2. 네트워크 생성
+    $ docker network create network-address
+
+3. DB 이미지 > 컨테이너
+    - init.sql > tblAddress + 데이터
+
+$ docker volume create oracle-data
+
+$ docker run -d --name oracle ^
+    --network network-address ^
+    -p 1522:1521 ^
+    -p 5551:5500 ^
+    -v oracle-data:/opt/oracle/oradata ^
+    -v ./scripts:/container-entrypoint-initdb.d ^
+    -e ORACLE_PASSWORD=java1234 ^
+    -e ORACLE_CHARACTERSET=AL32UTF8 ^
+    -e NLS_LANG=.AL32UTF8 ^
+    -e TZ=Asia/Seoul ^
+    gvenzl/oracle-xe:18.4.0
+
+
+
+4. 스프링 이미지 > 컨테이너
+
+- <beans> 프로필 선택
+
+4.1 STS3
+    "-Dspring.profiles.active=dev"
+
+4.2 Docker
+
+
+$ docker build -t address .
+
+$ docker run -d --name address ^
+    --network network-address ^
+    -p 8080:8080 ^
+    -e CATALINA_OPTS="-Dspring.profiles.active=prod" ^
+    address
+
+http://localhost:8080
+
+
+
+
+
+도커 수업 > 도커 컴포즈(오케스트레이션) > 쿠버네티스(오케스트레이션)
++
+CI/CD
 
 
